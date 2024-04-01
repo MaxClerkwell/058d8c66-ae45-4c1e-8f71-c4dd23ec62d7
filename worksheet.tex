@@ -1,27 +1,131 @@
 \documentclass{dcbl/challenge}
 
-\setdoctitle{Der Titel meines Dokuments}
+\setdoctitle{Compiling C}
 \setdocauthor{Stephan Bökelmann}
 \setdocemail{sboekelmann@ep1.rub.de}
 \setdocinstitute{AG Physik der Hadronen und Kerne}
-
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{hyperref}
 
 \begin{document}
 
-Jedes Challenge-Blatt beginnt mit einer kurzen Einleitung, die einen Kontext für den jeweiligen Zettel setzt. 
+Assembly is a powerful programming language, but it also comes with some drawbacks. 
+Neither is it easy to learn, nor is it easy to read. 
+Especially handling different types of data can be hard and time-consuming.
+Writing a whole operating-system in assembly seems almost impossible. 
+This is what Ritchie and Thompson believed to be true as well. 
+Another problem with assembly is, that it is not hardware agnostic. 
+All instructions are only valid for a specific architecture, which makes it impossible to write portable code.
+When Ritchie and Thompson started developing Unix, they came across the idea of not writing the code in assembly, but rather writing a recipe for a code-generator. 
+This had already been done before, resulting in other languages, such as FORTRAN and BCPL.
+Due to the limitations of the former languges, they decided to write a new code-generator in assembly, which could help them writing better operating-system code, which made it easier to write a new code-generator, which made it easier to write a better OS... and so on and so forth. 
+This was the process of simultaneous development of a high-level-language called \texttt{C} and the corresponding operating system called \texttt{Unix}.
 
-\section*{Aufgaben}
+\section*{Exercises}
 \begin{aufgabe}
-    Löse die Gleichung $x^2 - 5x + 6 = 0$.
+    The process of translating C into an executable is called \texttt{compiling}.
+    Compiling is done in multiple steps, that can be categorized into two phases: 
+    \begin{enumerate}
+        \item Analysis
+        \item Synthesis
+    \end{enumerate} 
+    There are multiple steps that need to be performed. 
+    Use the Internet as well as the presentation from the annotations to draw a process-diagram for the compilation process.
+    Include at least the following steps:
+    \begin{itemize}
+        \item assembling
+        \item abstract syntax-tree
+        \item linking
+        \item object-file
+        \item preprocessing
+        \item optimizing
+        \item semantic-analysis 
+        \item tokenization
+        \item intermediate-representation
+        \item syntactic-analysis 
+        \item optimization-pass
+        \item code-generation
+        \item parse-tree
+    \end{itemize}
 \end{aufgabe}
 
-\begin{aufgabe}[Für Fortgeschrittene]
-    Beweise den Satz des Pythagoras.
+\begin{aufgabe}
+    There are many differnet C-compilers out there. 
+    Probably the three most common are called:
+    \begin{enumerate}
+        \item GCC GNU Compiler Collection
+        \item MSVC Microsoft Visual Studio
+        \item CLANG Clang Compiler
+    \end{enumerate}
+    Your question is probably: Which one should I use? 
+    Well, if you are running on a linux system and you are a beginner, you should probably use GCC.
+    If you are running on Windows, you should probably use MSVC.
+    If you are running on MacOS, you should probably use CLANG.
+    But these are just rules of thumb. 
+    Whatever works for you is fine. 
+    Since all of them are standard-compatible-compilers and all of them are free, you can use any of them.
+    In order to install \texttt{gcc} on Linux, just use the package-manager like \texttt{sudo apt update} and \texttt{sudo apt install gcc}.
+    Make sure, that your installation works by calling \texttt{gcc --version}.
 \end{aufgabe}
 
-\section*{Anmerkungen}
+\begin{aufgabe}
+    Create a new directory in your home directory called \texttt{C-programs}.
+    Open a new textfile in this directory called \texttt{return.c}.
+    We will create a program, that returns the value 42 to the shell.
+    Write the following code:
+    \begin{lstlisting}[language={C}, caption={Return 42 in C}]
+        int main() { return 42; }
+    \end{lstlisting}
+    Compare this program with the program from worksheet \href{https://github.com/bjoekeldude/3dc16411-8fdf-438c-b8fc-aeb1fc723a22}{3dc16411-8fdf-438c-b8fc-aeb1fc723a22}.
+    Instead of writing the exact instructions we need to execute, a higher-level-language gives us a grammar that can be used to express our mental model of what the program is supposed to be doing. 
+    In this example, we define a mathematical function that is called \texttt{main} and takes no arguments.
+    The implementation says, that this function always returns 42, so it is basically a constant function.
+    When reading C-functions, try to think of $result = f(x) = implementation$.
+    So in our case $result = main( ) = 42$.
+    Let's fire up our compiler and see what happens!
+    Save the file and close your text-editor. 
+    Run \texttt{gcc return.c -o return42}. 
+    This way, \texttt{gcc} takes the C-file as an input and writes the output to the file \texttt{return42}.
+    Run \texttt{./return42} and look at the return value in the shell by querying the \texttt{echo \$?} command.
+\end{aufgabe}
+
+\begin{aufgabe}
+    Open a new textfile in this directory called \texttt{hello.c}.
+    We will create a program, that prints \textit{hello} to the shell.
+    Write the following code:
+    \begin{lstlisting}[language={C}, caption={Hello World in C}]
+        #include <stdio.h>
+        int main() { 
+            printf("hello\n"); 
+            return 0; 
+        }
+    \end{lstlisting}
+    Compare this to the assembly-version again. 
+    With growing programs, it gets even more obvious, how a high-level-language can help us writing programs. 
+    Especially a look into the first line will be new to us. 
+    The \texttt{\#include} statement is used to copy a complete file from a different location into our source-code. 
+    This way, we can use well defined functions, that other people already wrote for us.
+    The \texttt{stdio.h} header-file contains all the standard-input and standard-output functions.
+    Something we had to write in a tedious way to get it working in assembly.
+    One thing must be kept in mind here all the time: We stopped writing the program ourselves, and started writing recipies for a code-generator!
+    Let us investigate the actual steps of compilation now.\\
+    \begin{enumerate}
+        \item \texttt{gcc -E hello.c -o hello.i} - This first step runs the preprocessor and writes the so called pure-C file into the \texttt{hello.i}.
+        \item \texttt{gcc -S hello.i -o hello.s} - This second step runs the assembler and writes an assembly-file into the \texttt{hello.s}.
+        \item \texttt{gcc -c hello.s -o hello.o} - This third step compiles the assembly-file into an object-file.
+        \item \texttt{gcc hello.o -o hello} - This last step links the object-file into an executable-file.
+    \end{enumerate}
+    Take a look at the pure-C file, as well as the assembly-file.
+    Use \texttt{objdump -D -s -t -x hello.o} to get an overview of the object-file.
+    And run \texttt{./hello} to see the output in the shell.
+    Usually you wouldn't run each step individually but just call \texttt{gcc hello.c -o hello} and \texttt{./hello}.
+\end{aufgabe}
+
+
+\section*{Annotations}
 \begin{enumerate}
-    \item Link zu einem YouTube-Video: \url{https://www.youtube.com}
+    \item Slide-Deck about Compiling: \href{https://docs.google.com/presentation/d/1L_ALmHWfUl4o5LmlR57lYcjnFoX_JdS_3fqgFlhNT6s/edit?usp=sharing}{Presentation}
 \end{enumerate}
 
 \end{document}
